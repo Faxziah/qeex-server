@@ -17,6 +17,12 @@ export class ContractsService {
     private userRepository: Repository<User>,
   ) {}
 
+  async index(data: { walletAddress: string }): Promise<Contract[]> {
+    return this.contractRepository.find({
+      where: { address: data.walletAddress },
+    });
+  }
+
   async create(data: {
     walletAddress: string;
     contractAddress: string;
