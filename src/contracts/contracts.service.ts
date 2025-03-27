@@ -19,27 +19,36 @@ export class ContractsService {
 
   async index(data: { walletAddress: string }): Promise<Contract[]> {
     return this.contractRepository.find({
-      where: { address: data.walletAddress },
+      where: {
+        address: data.walletAddress,
+      },
     });
   }
 
   async create(data: {
     walletAddress: string;
     contractAddress: string;
+    chainId: number;
   }): Promise<Contract> {
     try {
       let user = await this.userRepository.findOne({
-        where: { address: data.walletAddress },
+        where: { address: data.walletAddress, chain_id: data.chainId },
       });
 
       if (!user) {
-        user = this.userRepository.create({ address: data.walletAddress });
+        user = this.userRepository.create({
+          address: data.walletAddress,
+          chain_id: data.chainId,
+          created_at: Date(),
+        });
         user = await this.userRepository.save(user);
       }
 
       const contract = this.contractRepository.create({
         address: data.contractAddress,
         user_id: user.id,
+        chain_id: data.chainId,
+        created_at: Date(),
       });
 
       return await this.contractRepository.save(contract);

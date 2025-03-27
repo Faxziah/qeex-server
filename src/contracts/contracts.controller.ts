@@ -20,6 +20,7 @@ export class ContractsController {
     const data = {
       walletAddress: body.walletAddress,
       contractAddress: body.contractAddress,
+      chainId: body.chainId,
     };
 
     return this.contractsService.create(data);

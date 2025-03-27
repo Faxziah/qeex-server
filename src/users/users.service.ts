@@ -12,15 +12,4 @@ export class UsersService {
     @Inject('USER_REPOSITORY')
     private userRepository: Repository<User>,
   ) {}
-
-  async create(body: any): Promise<User> {
-    const newContract: User[] = this.userRepository.create(body);
-
-    try {
-      const result: User[] = await this.userRepository.save(newContract);
-      return result[0];
-    } catch (e) {
-      throw new InternalServerErrorException(e.message);
-    }
-  }
 }
