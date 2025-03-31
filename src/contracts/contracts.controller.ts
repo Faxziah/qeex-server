@@ -1,4 +1,4 @@
-import { Controller, Body, Post, Get } from '@nestjs/common';
+import { Controller, Body, Post, Get, Query } from '@nestjs/common';
 import { ContractsService } from './contracts.service';
 import { Contract } from './contract.entity';
 
@@ -7,10 +7,10 @@ export class ContractsController {
   constructor(private readonly contractsService: ContractsService) {}
 
   @Get('/')
-  async index(@Body() body: any): Promise<Contract[]> {
-    const data = {
-      walletAddress: body.walletAddress,
-    };
+  async index(
+    @Query('walletAddress') walletAddress: string,
+  ): Promise<Contract[]> {
+    const data = { walletAddress };
 
     return this.contractsService.index(data);
   }
@@ -21,6 +21,8 @@ export class ContractsController {
       walletAddress: body.walletAddress,
       contractAddress: body.contractAddress,
       chainId: body.chainId,
+      blockNumber: body.blockNumber,
+      status: body.status,
     };
 
     return this.contractsService.create(data);

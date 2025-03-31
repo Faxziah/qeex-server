@@ -6,6 +6,7 @@ import {
 import { Repository } from 'typeorm';
 import { Contract } from './contract.entity';
 import { User } from '../users/user.entity';
+import { ContractStatus } from '../interface/IContract';
 
 @Injectable()
 export class ContractsService {
@@ -18,10 +19,17 @@ export class ContractsService {
   ) {}
 
   async index(data: { walletAddress: string }): Promise<Contract[]> {
-    return this.contractRepository.find({
-      where: {
-        address: data.walletAddress,
-      },
+    const user = await this.userRepository.findOneBy({
+      address: data.walletAddress,
+    });
+
+    if (!user) {
+      throw new InternalServerErrorException(`Пользователь не найден`);
+    }
+
+    return await this.contractRepository.find({
+      where: { user_id: user.id },
+      relations: ['user'],
     });
   }
 
@@ -29,10 +37,13 @@ export class ContractsService {
     walletAddress: string;
     contractAddress: string;
     chainId: number;
+    blockNumber: number;
+    status: ContractStatus;
   }): Promise<Contract> {
     try {
-      let user = await this.userRepository.findOne({
-        where: { address: data.walletAddress, chain_id: data.chainId },
+      let user = await this.userRepository.findOneBy({
+        address: data.walletAddress,
+        chain_id: data.chainId,
       });
 
       if (!user) {
@@ -48,6 +59,8 @@ export class ContractsService {
         address: data.contractAddress,
         user_id: user.id,
         chain_id: data.chainId,
+        block_number: data.blockNumber,
+        status: data.status,
         created_at: Date(),
       });
 
