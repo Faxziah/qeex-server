@@ -34,4 +34,7 @@ export class Contract {
 
   @Column()
   created_at: Date;
+
+  @Column()
+  pay_tx_hash: string;
 }

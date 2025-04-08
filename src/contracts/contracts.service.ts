@@ -39,6 +39,7 @@ export class ContractsService {
     chainId: number;
     blockNumber: number;
     status: ContractStatus;
+    payTxHash: string;
   }): Promise<Contract> {
     try {
       let user = await this.userRepository.findOneBy({
@@ -62,6 +63,7 @@ export class ContractsService {
         block_number: data.blockNumber,
         status: data.status,
         created_at: Date(),
+        pay_tx_hash: data.payTxHash,
       });
 
       return await this.contractRepository.save(contract);

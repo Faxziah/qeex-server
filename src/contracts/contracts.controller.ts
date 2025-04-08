@@ -23,6 +23,7 @@ export class ContractsController {
       chainId: body.chainId,
       blockNumber: body.blockNumber,
       status: body.status,
+      payTxHash: body.payTxHash,
     };
 
     return this.contractsService.create(data);
