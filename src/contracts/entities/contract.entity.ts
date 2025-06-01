@@ -5,8 +5,9 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { ContractStatus } from '../interface/IContract';
-import { User } from '../users/user.entity';
+import { ContractStatus } from '../../interface/IContract';
+import { User } from '../../users/entities/user.entity';
+import { ContractType } from '../../contract-types/entities/contract-type.entity';
 
 @Entity('contracts')
 export class Contract {
@@ -19,6 +20,13 @@ export class Contract {
   @ManyToOne(() => User, (user) => user.contracts)
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @Column()
+  contract_type_id: number;
+
+  @ManyToOne(() => ContractType)
+  @JoinColumn({ name: 'contract_type_id' })
+  contractType: ContractType;
 
   @Column()
   chain_id: number;
@@ -36,5 +44,5 @@ export class Contract {
   created_at: Date;
 
   @Column()
-  pay_tx_hash: string;
+  payment_transaction_hash: string;
 }

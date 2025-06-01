@@ -1,31 +1,45 @@
-import { Controller, Body, Post, Get, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ContractsService } from './contracts.service';
-import { Contract } from './contract.entity';
+import { CreateContractDto } from './dto/create-contract.dto';
+import { UpdateContractDto } from './dto/update-contract.dto';
 
-@Controller('api/contracts')
+@Controller('contracts')
 export class ContractsController {
   constructor(private readonly contractsService: ContractsService) {}
 
-  @Get('/')
-  async index(
-    @Query('walletAddress') walletAddress: string,
-  ): Promise<Contract[]> {
-    const data = { walletAddress };
-
-    return this.contractsService.index(data);
+  @Post()
+  create(@Body() createContractDto: CreateContractDto) {
+    return this.contractsService.create(createContractDto);
   }
 
-  @Post('create')
-  async create(@Body() body: any): Promise<Contract> {
-    const data = {
-      walletAddress: body.walletAddress,
-      contractAddress: body.contractAddress,
-      chainId: body.chainId,
-      blockNumber: body.blockNumber,
-      status: body.status,
-      payTxHash: body.payTxHash,
-    };
+  @Get()
+  findAll() {
+    return this.contractsService.findAll();
+  }
 
-    return this.contractsService.create(data);
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.contractsService.findOne(+id);
+  }
+
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateContractDto: UpdateContractDto,
+  ) {
+    return this.contractsService.update(+id, updateContractDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.contractsService.remove(+id);
   }
 }

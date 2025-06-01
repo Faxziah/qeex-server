@@ -2,75 +2,91 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  BadRequestException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { Contract } from './contract.entity';
-import { User } from '../users/user.entity';
-import { ContractStatus } from '../interface/IContract';
+import { Contract } from './entities/contract.entity';
+import { CreateContractDto } from './dto/create-contract.dto';
+import { UpdateContractDto } from './dto/update-contract.dto';
+import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class ContractsService {
   constructor(
     @Inject('CONTRACT_REPOSITORY')
-    private contractRepository: Repository<Contract>,
-
+    private contractsRepository: Repository<Contract>,
     @Inject('USER_REPOSITORY')
     private userRepository: Repository<User>,
   ) {}
 
-  async index(data: { walletAddress: string }): Promise<Contract[]> {
-    const user = await this.userRepository.findOneBy({
-      address: data.walletAddress,
-    });
-
-    if (!user) {
-      throw new InternalServerErrorException(`Пользователь не найден`);
-    }
-
-    return await this.contractRepository.find({
-      where: { user_id: user.id },
-      relations: ['user'],
-    });
-  }
-
-  async create(data: {
-    walletAddress: string;
-    contractAddress: string;
-    chainId: number;
-    blockNumber: number;
-    status: ContractStatus;
-    payTxHash: string;
-  }): Promise<Contract> {
+  async create(createContractDto: CreateContractDto) {
     try {
+      if (!createContractDto.paymentTransactionHash) {
+        throw new BadRequestException('Transaction hash is required');
+      }
+
+      if (
+        !createContractDto.paymentTransactionHash.match(/^0x[a-fA-F0-9]{64}$/)
+      ) {
+        throw new BadRequestException('Invalid transaction hash format');
+      }
+
       let user = await this.userRepository.findOneBy({
-        address: data.walletAddress,
-        chain_id: data.chainId,
+        address: createContractDto.walletAddress,
+        chain_id: createContractDto.chainId,
       });
 
       if (!user) {
         user = this.userRepository.create({
-          address: data.walletAddress,
-          chain_id: data.chainId,
-          created_at: Date(),
+          address: createContractDto.walletAddress,
+          chain_id: createContractDto.chainId,
+          created_at: new Date(),
         });
         user = await this.userRepository.save(user);
       }
 
-      const contract = this.contractRepository.create({
-        address: data.contractAddress,
+      const contract = this.contractsRepository.create({
+        address: createContractDto.contractAddress,
         user_id: user.id,
-        chain_id: data.chainId,
-        block_number: data.blockNumber,
-        status: data.status,
-        created_at: Date(),
-        pay_tx_hash: data.payTxHash,
+        chain_id: createContractDto.chainId,
+        block_number: createContractDto.blockNumber,
+        status: createContractDto.status,
+        created_at: new Date(),
+        payment_transaction_hash: createContractDto.paymentTransactionHash,
+        contract_type_id: createContractDto.contractTypeId,
       });
 
-      return await this.contractRepository.save(contract);
+      return await this.contractsRepository.save(contract);
     } catch (e) {
+      if (e instanceof BadRequestException) {
+        throw e;
+      }
       throw new InternalServerErrorException(
         `Error creating contract: ${e.message}`,
       );
     }
+  }
+
+  findAll() {
+    return this.contractsRepository.find({
+      relations: ['user', 'contractType'],
+    });
+  }
+
+  findOne(id: number) {
+    return this.contractsRepository.findOne({
+      where: { id },
+      relations: ['user', 'contractType'],
+    });
+  }
+
+  async update(id: number, updateContractDto: UpdateContractDto) {
+    await this.contractsRepository.update(id, updateContractDto);
+    return this.findOne(id);
+  }
+
+  async remove(id: number) {
+    const contract = await this.findOne(id);
+    return this.contractsRepository.remove(contract);
   }
 }

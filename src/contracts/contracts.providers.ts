@@ -1,6 +1,5 @@
 import { DataSource } from 'typeorm';
-import { Contract } from './contract.entity';
-import { Repository } from 'typeorm';
+import { Contract } from './entities/contract.entity';
 
 export const contractsProviders = [
   {
