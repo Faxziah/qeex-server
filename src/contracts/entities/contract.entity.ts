@@ -5,7 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { ContractStatus } from '../../interface/IContract';
+import { ContractStatus } from '../enums/contract-status.enum';
 import { User } from '../../users/entities/user.entity';
 import { ContractType } from '../../contract-types/entities/contract-type.entity';
 
