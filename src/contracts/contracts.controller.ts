@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ContractsService } from './contracts.service';
 import { CreateContractDto } from './dto/create-contract.dto';
@@ -21,8 +22,11 @@ export class ContractsController {
   }
 
   @Get()
-  findAll() {
-    return this.contractsService.findAll();
+  findAll(
+    @Query('walletAddress') walletAddress?: string,
+    @Query('chainId') chainId?: string,
+  ) {
+    return this.contractsService.findAll(walletAddress, chainId);
   }
 
   @Get(':id')

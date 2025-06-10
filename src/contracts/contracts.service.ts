@@ -67,10 +67,20 @@ export class ContractsService {
     }
   }
 
-  findAll() {
-    return this.contractsRepository.find({
-      relations: ['user', 'contractType'],
-    });
+  async findAll(walletAddress?: string, chainId?: string) {
+    const queryBuilder = this.contractsRepository.createQueryBuilder('contract')
+      .leftJoinAndSelect('contract.user', 'user')
+      .leftJoinAndSelect('contract.contractType', 'contractType');
+
+    if (walletAddress) {
+      queryBuilder.andWhere('user.address = :walletAddress', { walletAddress });
+    }
+
+    if (chainId) {
+      queryBuilder.andWhere('user.chain_id = :chainId', { chainId });
+    }
+
+    return await queryBuilder.getMany();
   }
 
   findOne(id: number) {
