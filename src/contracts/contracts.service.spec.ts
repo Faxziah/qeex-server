@@ -67,7 +67,7 @@ describe('ContractsService', () => {
     };
 
     it('should create a new contract with existing user', async () => {
-      const existingUser: User = { id: 1, address: '0xabc', chain_id: 1, created_at: new Date(), contracts: [] };
+      const existingUser: User = { id: 1, address: '0xabc', created_at: new Date(), contracts: [] };
       const createdContract: Contract = { id: 1, user_id: 1, address: '0xdef', chain_id: 1, block_number: 123, status: ContractStatus.DEPLOYED, created_at: new Date(), payment_transaction_hash: '0x1234567890123456789012345678901234567890123456789012345678901234', contract_type_id: 1, user: existingUser, contractType: null };
 
       (userRepository.findOneBy as jest.Mock).mockResolvedValue(existingUser);
@@ -75,7 +75,7 @@ describe('ContractsService', () => {
       (contractsRepository.save as jest.Mock).mockResolvedValue(createdContract);
 
       expect(await service.create(createContractDto as any)).toEqual(createdContract);
-      expect(userRepository.findOneBy).toHaveBeenCalledWith({ address: createContractDto.walletAddress, chain_id: createContractDto.chainId });
+      expect(userRepository.findOneBy).toHaveBeenCalledWith({ address: createContractDto.walletAddress });
       expect(userRepository.create).not.toHaveBeenCalled();
       expect(userRepository.save).not.toHaveBeenCalled();
       expect(contractsRepository.create).toHaveBeenCalledWith(expect.objectContaining({
@@ -86,7 +86,7 @@ describe('ContractsService', () => {
     });
 
     it('should create a new contract and a new user', async () => {
-      const newUser: User = { id: 1, address: '0xabc', chain_id: 1, created_at: new Date(), contracts: [] };
+      const newUser: User = { id: 1, address: '0xabc', created_at: new Date(), contracts: [] };
       const createdContract: Contract = { id: 1, user_id: 1, address: '0xdef', chain_id: 1, block_number: 123, status: ContractStatus.DEPLOYED, created_at: new Date(), payment_transaction_hash: '0x1234567890123456789012345678901234567890123456789012345678901234', contract_type_id: 1, user: newUser, contractType: null };
 
       (userRepository.findOneBy as jest.Mock).mockResolvedValue(null);
@@ -96,8 +96,8 @@ describe('ContractsService', () => {
       (contractsRepository.save as jest.Mock).mockResolvedValue(createdContract);
 
       expect(await service.create(createContractDto as any)).toEqual(createdContract);
-      expect(userRepository.findOneBy).toHaveBeenCalledWith({ address: createContractDto.walletAddress, chain_id: createContractDto.chainId });
-      expect(userRepository.create).toHaveBeenCalledWith(expect.objectContaining({ address: createContractDto.walletAddress, chain_id: createContractDto.chainId }));
+      expect(userRepository.findOneBy).toHaveBeenCalledWith({ address: createContractDto.walletAddress });
+      expect(userRepository.create).toHaveBeenCalledWith(expect.objectContaining({ address: createContractDto.walletAddress }));
       expect(userRepository.save).toHaveBeenCalledWith(newUser);
       expect(contractsRepository.create).toHaveBeenCalledWith(expect.objectContaining({
         address: createContractDto.contractAddress,
@@ -166,7 +166,7 @@ describe('ContractsService', () => {
 
       const chainId = '1';
       expect(await service.findAll(undefined, chainId)).toEqual(mockContracts);
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('user.chain_id = :chainId', { chainId });
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('contract.chain_id = :chainId', { chainId });
     });
 
     it('should return contracts filtered by both walletAddress and chainId', async () => {
@@ -177,7 +177,7 @@ describe('ContractsService', () => {
       const chainId = '1';
       expect(await service.findAll(walletAddress, chainId)).toEqual(mockContracts);
       expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('user.address = :walletAddress', { walletAddress });
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('user.chain_id = :chainId', { chainId });
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('contract.chain_id = :chainId', { chainId });
     });
   });
 

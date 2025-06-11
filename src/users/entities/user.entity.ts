@@ -6,10 +6,7 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  chain_id: number;
-
-  @Column({ length: 100 })
+  @Column({ length: 100, unique: true })
   address: string;
 
   @Column()

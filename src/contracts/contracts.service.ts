@@ -33,13 +33,11 @@ export class ContractsService {
 
       let user = await this.userRepository.findOneBy({
         address: createContractDto.walletAddress,
-        chain_id: createContractDto.chainId,
       });
 
       if (!user) {
         user = this.userRepository.create({
           address: createContractDto.walletAddress,
-          chain_id: createContractDto.chainId,
           created_at: new Date(),
         });
         user = await this.userRepository.save(user);
@@ -77,7 +75,7 @@ export class ContractsService {
     }
 
     if (chainId) {
-      queryBuilder.andWhere('user.chain_id = :chainId', { chainId });
+      queryBuilder.andWhere('contract.chain_id = :chainId', { chainId });
     }
 
     return await queryBuilder.getMany();
